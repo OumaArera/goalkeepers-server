@@ -1,0 +1,10 @@
+# Ignore environment variables
+/.env
+
+# Ignore SSL/TLS certificate
+ssl/ca-certificate.crt
+
+node_modules/
+
+# Migration logic
+/knexfile.js
