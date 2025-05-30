@@ -31,7 +31,7 @@ const sendMail = async ({ to, subject, text }) => {
     return response.data;
   } catch (err) {
     console.error('Email API Error:', err.response ? err.response.data : err.message);
-    throw new Error('Failed to send email via external email API.');
+    throw new Error(`Failed to send email via external email API.`);
   }
 };
 

@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1748634541911" clover="3.2.0">
+  <project timestamp="1748634541912" name="All files">
+    <metrics statements="211" coveredstatements="182" conditionals="76" coveredconditionals="53" methods="37" coveredmethods="29" elements="324" coveredelements="264" complexity="0" loc="211" ncloc="211" packages="5" files="6" classes="6"/>
+    <package name="config">
+      <metrics statements="12" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+      <file name="db.js" path="/home/ouma/Development/code/goalkeepers-server/config/db.js">
+        <metrics statements="12" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="27" count="0" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="middlewares">
+      <metrics statements="11" coveredstatements="11" conditionals="8" coveredconditionals="8" methods="2" coveredmethods="2"/>
+      <file name="role.middleware.js" path="/home/ouma/Development/code/goalkeepers-server/middlewares/role.middleware.js">
+        <metrics statements="11" coveredstatements="11" conditionals="8" coveredconditionals="8" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="4" count="6" type="stmt"/>
+        <line num="5" count="6" type="cond" truecount="4" falsecount="0"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="9" count="5" type="stmt"/>
+        <line num="10" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="14" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="models">
+      <metrics statements="183" coveredstatements="157" conditionals="68" coveredconditionals="45" methods="32" coveredmethods="26"/>
+      <file name="customer.model.js" path="/home/ouma/Development/code/goalkeepers-server/models/customer.model.js">
+        <metrics statements="77" coveredstatements="76" conditionals="29" coveredconditionals="27" methods="13" coveredmethods="13"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="8" count="9" type="stmt"/>
+        <line num="9" count="9" type="stmt"/>
+        <line num="10" count="9" type="stmt"/>
+        <line num="11" count="9" type="stmt"/>
+        <line num="12" count="9" type="stmt"/>
+        <line num="13" count="9" type="stmt"/>
+        <line num="14" count="9" type="stmt"/>
+        <line num="15" count="9" type="stmt"/>
+        <line num="19" count="15" type="stmt"/>
+        <line num="23" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="26" count="6" type="stmt"/>
+        <line num="37" count="7" type="stmt"/>
+        <line num="38" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="42" count="5" type="stmt"/>
+        <line num="46" count="4" type="stmt"/>
+        <line num="47" count="4" type="stmt"/>
+        <line num="50" count="4" type="stmt"/>
+        <line num="51" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="56" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="57" count="3" type="stmt"/>
+        <line num="58" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
+        <line num="88" count="2" type="stmt"/>
+        <line num="89" count="2" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="91" count="1" type="stmt"/>
+        <line num="93" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="94" count="1" type="stmt"/>
+        <line num="96" count="0" type="stmt"/>
+        <line num="101" count="1" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="106" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="112" count="2" type="stmt"/>
+        <line num="113" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="117" count="2" type="stmt"/>
+        <line num="121" count="2" type="stmt"/>
+        <line num="125" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="129" count="4" type="stmt"/>
+        <line num="130" count="20" type="stmt"/>
+        <line num="133" count="4" type="stmt"/>
+        <line num="134" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="136" count="3" type="stmt"/>
+        <line num="144" count="3" type="stmt"/>
+        <line num="145" count="3" type="stmt"/>
+        <line num="146" count="3" type="stmt"/>
+        <line num="148" count="3" type="stmt"/>
+        <line num="149" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="150" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="151" count="1" type="stmt"/>
+        <line num="152" count="1" type="stmt"/>
+        <line num="153" count="1" type="stmt"/>
+        <line num="155" count="3" type="stmt"/>
+        <line num="156" count="3" type="stmt"/>
+        <line num="158" count="4" type="stmt"/>
+        <line num="162" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="163" count="1" type="stmt"/>
+        <line num="166" count="2" type="stmt"/>
+        <line num="167" count="2" type="stmt"/>
+        <line num="169" count="2" type="stmt"/>
+        <line num="173" count="2" type="stmt"/>
+        <line num="175" count="2" type="stmt"/>
+        <line num="176" count="2" type="stmt"/>
+        <line num="177" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="178" count="1" type="stmt"/>
+        <line num="180" count="1" type="stmt"/>
+        <line num="182" count="1" type="stmt"/>
+        <line num="187" count="1" type="stmt"/>
+      </file>
+      <file name="user.model.js" path="/home/ouma/Development/code/goalkeepers-server/models/user.model.js">
+        <metrics statements="106" coveredstatements="81" conditionals="39" coveredconditionals="18" methods="19" coveredmethods="13"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="20" count="4" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="22" count="4" type="stmt"/>
+        <line num="23" count="4" type="stmt"/>
+        <line num="24" count="4" type="stmt"/>
+        <line num="25" count="4" type="stmt"/>
+        <line num="26" count="4" type="stmt"/>
+        <line num="27" count="4" type="stmt"/>
+        <line num="28" count="4" type="stmt"/>
+        <line num="29" count="4" type="stmt"/>
+        <line num="30" count="4" type="stmt"/>
+        <line num="31" count="4" type="stmt"/>
+        <line num="32" count="4" type="stmt"/>
+        <line num="36" count="8" type="stmt"/>
+        <line num="45" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="48" count="4" type="stmt"/>
+        <line num="60" count="4" type="stmt"/>
+        <line num="61" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="65" count="3" type="stmt"/>
+        <line num="69" count="4" type="stmt"/>
+        <line num="70" count="3" type="stmt"/>
+        <line num="72" count="3" type="stmt"/>
+        <line num="73" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="74" count="1" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
+        <line num="78" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="82" count="2" type="stmt"/>
+        <line num="83" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="87" count="2" type="stmt"/>
+        <line num="105" count="2" type="stmt"/>
+        <line num="120" count="2" type="stmt"/>
+        <line num="121" count="2" type="stmt"/>
+        <line num="122" count="2" type="stmt"/>
+        <line num="123" count="2" type="stmt"/>
+        <line num="125" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="126" count="0" type="stmt"/>
+        <line num="128" count="0" type="stmt"/>
+        <line num="133" count="0" type="stmt"/>
+        <line num="134" count="0" type="stmt"/>
+        <line num="139" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="140" count="0" type="stmt"/>
+        <line num="141" count="0" type="stmt"/>
+        <line num="145" count="2" type="stmt"/>
+        <line num="146" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="150" count="0" type="stmt"/>
+        <line num="154" count="0" type="stmt"/>
+        <line num="158" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="162" count="0" type="stmt"/>
+        <line num="166" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="170" count="1" type="stmt"/>
+        <line num="174" count="2" type="stmt"/>
+        <line num="175" count="22" type="stmt"/>
+        <line num="178" count="2" type="stmt"/>
+        <line num="179" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="181" count="2" type="stmt"/>
+        <line num="195" count="2" type="stmt"/>
+        <line num="196" count="2" type="stmt"/>
+        <line num="197" count="2" type="stmt"/>
+        <line num="199" count="2" type="stmt"/>
+        <line num="200" count="22" type="cond" truecount="2" falsecount="0"/>
+        <line num="201" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="202" count="0" type="stmt"/>
+        <line num="203" count="0" type="stmt"/>
+        <line num="204" count="0" type="stmt"/>
+        <line num="206" count="2" type="stmt"/>
+        <line num="207" count="2" type="stmt"/>
+        <line num="209" count="2" type="stmt"/>
+        <line num="213" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="214" count="0" type="stmt"/>
+        <line num="218" count="2" type="stmt"/>
+        <line num="219" count="2" type="stmt"/>
+        <line num="221" count="2" type="stmt"/>
+        <line num="225" count="2" type="stmt"/>
+        <line num="227" count="2" type="stmt"/>
+        <line num="228" count="2" type="stmt"/>
+        <line num="229" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="230" count="0" type="stmt"/>
+        <line num="232" count="2" type="stmt"/>
+        <line num="234" count="0" type="stmt"/>
+        <line num="239" count="1" type="stmt"/>
+        <line num="243" count="1" type="stmt"/>
+        <line num="247" count="0" type="stmt"/>
+        <line num="248" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="252" count="1" type="stmt"/>
+        <line num="261" count="1" type="stmt"/>
+        <line num="262" count="1" type="stmt"/>
+        <line num="263" count="1" type="stmt"/>
+        <line num="265" count="1" type="stmt"/>
+        <line num="266" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="267" count="1" type="stmt"/>
+        <line num="268" count="1" type="stmt"/>
+        <line num="269" count="1" type="stmt"/>
+        <line num="273" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="274" count="1" type="stmt"/>
+        <line num="276" count="1" type="stmt"/>
+        <line num="277" count="1" type="stmt"/>
+        <line num="278" count="1" type="stmt"/>
+        <line num="280" count="0" type="stmt"/>
+        <line num="285" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="permissions">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="roleGroups.js" path="/home/ouma/Development/code/goalkeepers-server/permissions/roleGroups.js">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="utils">
+      <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <file name="validatePhone.js" path="/home/ouma/Development/code/goalkeepers-server/utils/validatePhone.js">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="4" count="12" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

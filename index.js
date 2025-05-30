@@ -2,17 +2,18 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const userRoutes = require('./routes/user.routes');
+const customerRoutes = require('./routes/customer.routes');
 
 // Middleware to parse JSON
 app.use(express.json());
 
-// Example route
 app.get('/', (req, res) => {
   res.send('Hello, Express!');
 });
 app.use('/v1/api/users', userRoutes);
+app.use('/v1/api/customers', customerRoutes);
 
-// ❗️Catch-all route for non-existent endpoints
+// Catch-all route for non-existent endpoints
 app.use((req, res, next) => {
   res.status(404).json({
     error: 'Endpoint not found',
@@ -20,7 +21,7 @@ app.use((req, res, next) => {
   });
 });
 
-// ❗️General error-handling middleware
+// General error-handling middleware
 app.use((err, req, res, next) => {
   console.error('Unexpected error:', err);
   res.status(500).json({

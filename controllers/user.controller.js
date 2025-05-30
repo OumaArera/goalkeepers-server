@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { generateRandomPassword } = require('../utils/generateRandomPassword');
 const TokenService = require('../utils/tokenService');
 const { keysToCamel } = require('../utils/caseConverter');
+const sendMail = require('../config/mailer');
 
 class UserController {
   static async register(req, res) {
@@ -18,9 +19,13 @@ class UserController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-      const user = await User.findActiveByEmail(email);
+      const user = await User.findByEmailRegardlessOfStatus(email);
 
       if (!user) return res.status(401).json({ error: 'User not found.' });
+
+      if (['blocked', 'suspended', 'deleted'].includes(user.status)) {
+        return res.status(403).json({ error: 'Your account is not active. Please contact the system administrator for assistance.' });
+      }
 
       const isPasswordValid = await User.validatePassword(password, user.password);
       if (!isPasswordValid) return res.status(401).json({ error: 'Invalid credentials.' });
@@ -48,7 +53,11 @@ class UserController {
 
  static async changePassword(req, res) {
     try {
-      const { email, oldPassword, newPassword } = req.body;
+      const { oldPassword, newPassword } = req.body;
+
+      const email = req.user?.email;
+      if (!email) return res.status(401).json({ error: 'Unauthorized' });
+      
       const user = await User.findByEmail(email);
 
       if (!user) return res.status(404).json({ error: 'User not found' });
@@ -73,8 +82,9 @@ class UserController {
 
       const newPassword = generateRandomPassword();
       await User.updateById(user.id, { password: newPassword });
+      console.log("Pass: ", newPassword);
 
-      await transporter.sendMail({
+      await sendMail({
         to: email,
         subject: 'Password Recovery',
         text: `Your new password is: ${newPassword}`

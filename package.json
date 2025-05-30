@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
