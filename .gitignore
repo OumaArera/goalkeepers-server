@@ -8,3 +8,12 @@ node_modules/
 
 # Migration logic
 /knexfile.js
+
+
+.env.test
+
+# Google Drive Keys
+config/driveuploaderapp-*.json
+
+
+.sequelizerc

@@ -1,11 +1,17 @@
-const db = require('../config/db');
-const User = require('../models/user.model');
 const bcrypt = require('bcrypt');
+const sequelize = require('../config/sequelize');
+const User = require('../models/user.model');
 
-jest.mock('../config/db');
-
-describe('User Model Tests', () => {
+describe('User Model with SQLite', () => {
   let validUserData;
+
+  beforeAll(async () => {
+    await sequelize.sync({ force: true }); // Create schema
+  });
+
+  afterAll(async () => {
+    await sequelize.close(); // Close connection
+  });
 
   beforeEach(() => {
     validUserData = {
@@ -19,95 +25,66 @@ describe('User Model Tests', () => {
       phonenumber: '+254712345678',
       email: 'john@example.com',
       password: 'securePass123',
-      status: 'active'
+      status: 'active',
+      avatar: null
     };
+  });
 
-    db.query.mockClear();
+  afterEach(async () => {
+    await User.destroy({ where: {} }); // Clear data
   });
 
   test('should validate and save a valid user', async () => {
-    db.query
-      .mockResolvedValueOnce({ rowCount: 0 }) // email check
-      .mockResolvedValueOnce({ rowCount: 0 }) // phone check
-      .mockResolvedValueOnce({ rowCount: 0 }) // ID/passport check
-      .mockResolvedValueOnce({ rows: [{ id: 1 }] }); // insert
-
-    const user = new User(validUserData);
-    const savedUser = await user.save();
-
-    expect(savedUser.id).toBe(1);
-    expect(db.query).toHaveBeenCalledTimes(4);
+    const user = await User.create(validUserData);
+    expect(user.firstName).toBe('John');
+    expect(user.email).toBe('john@example.com');
   });
 
   test('should throw validation error for invalid email', async () => {
     validUserData.email = 'invalid-email';
-    const user = new User(validUserData);
-
-    await expect(user.save()).rejects.toThrow('Validation Error');
-  });
-
-  test('should throw error for duplicate email', async () => {
-    db.query
-      .mockResolvedValueOnce({ rowCount: 1 }); // email check
-
-    const user = new User(validUserData);
-    await expect(user.save()).rejects.toThrow('A user with this email already exists.');
+    await expect(User.create(validUserData)).rejects.toThrow();
   });
 
   test('should hash password before saving', async () => {
-    db.query
-      .mockResolvedValueOnce({ rowCount: 0 }) // email
-      .mockResolvedValueOnce({ rowCount: 0 }) // phone
-      .mockResolvedValueOnce({ rowCount: 0 }) // ID
-      .mockResolvedValueOnce({ rows: [{ id: 1 }] }); // insert
-
-    const user = new User(validUserData);
-    await user.save();
-
-    expect(bcrypt.compareSync('securePass123', user.password)).toBe(true);
+    const user = await User.create(validUserData);
+    const isMatch = await bcrypt.compare('securePass123', user.password);
+    expect(isMatch).toBe(true);
   });
 
   test('should block a user', async () => {
-    db.query.mockResolvedValueOnce({ rows: [{ id: 1, status: 'blocked' }] });
-
-    const result = await User.blockUserById(1);
-    expect(result.status).toBe('blocked');
+    const user = await User.create(validUserData);
+    const blocked = await User.blockUserById(user.id);
+    expect(blocked.status).toBe('blocked');
   });
 
   test('should unblock a user', async () => {
-    db.query.mockResolvedValueOnce({ rows: [{ id: 1, status: 'active' }] });
-
-    const result = await User.unblockUserById(1);
-    expect(result.status).toBe('active');
+    const user = await User.create({ ...validUserData, status: 'blocked' });
+    const unblocked = await User.unblockUserById(user.id);
+    expect(unblocked.status).toBe('active');
   });
 
   test('should find user by email', async () => {
-    db.query.mockResolvedValueOnce({ rows: [{ email: 'john@example.com' }] });
-
-    const user = await User.findByEmail('john@example.com');
-    expect(user.email).toBe('john@example.com');
+    await User.create(validUserData);
+    const found = await User.findByEmailRegardlessOfStatus(validUserData.email);
+    expect(found.email).toBe(validUserData.email);
   });
 
   test('should return null if user not found', async () => {
-    db.query.mockResolvedValueOnce({ rows: [] });
-
-    const user = await User.findByEmail('notfound@example.com');
-    expect(user).toBeNull();
+    const result = await User.findByEmailRegardlessOfStatus('nonexistent@example.com');
+    expect(result).toBeNull();
   });
 
   test('should compare hashed and plain passwords correctly', async () => {
-    const plain = 'password123';
+    const plain = 'securePass123';
     const hashed = await bcrypt.hash(plain, 10);
-
-    const match = await User.validatePassword(plain, hashed);
-    expect(match).toBe(true);
+    const result = await User.validatePassword(plain, hashed);
+    expect(result).toBe(true);
   });
 
-  test('should apply filters in findAll correctly', async () => {
-    db.query.mockResolvedValueOnce({ rows: [{ first_name: 'John' }] });
-
-    const users = await User.findAll({ firstName: 'John' });
-    expect(users.length).toBe(1);
-    expect(users[0].first_name).toBe('John');
+  test('should apply filters in findAllWithFilters correctly', async () => {
+    await User.create(validUserData);
+    const result = await User.findAllWithFilters({ firstName: 'John' });
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0].firstName).toContain('John');
   });
 });

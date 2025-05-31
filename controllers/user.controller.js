@@ -8,8 +8,7 @@ const sendMail = require('../config/mailer');
 class UserController {
   static async register(req, res) {
     try {
-      const user = new User(req.body);
-      await user.save();
+      const user = await User.createUser(req.body);
       res.status(201).json({ message: 'User created successfully', userId: user.id });
     } catch (err) {
       res.status(400).json({ error: err.message });

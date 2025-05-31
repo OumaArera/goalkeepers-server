@@ -75,10 +75,22 @@ const customerSchema = Joi.object({
   password: Joi.string().min(8).required(),
 });
 
+// Customer.validateCustomer = async (customer) => {
+//   const { error } = customerSchema.validate(customer);
+//   if (error) throw new Error(`Validation Error: ${error.message}`);
+// };
+
 Customer.validateCustomer = async (customer) => {
-  const { error } = customerSchema.validate(customer);
+  const { error, value } = customerSchema.validate(customer, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
+
   if (error) throw new Error(`Validation Error: ${error.message}`);
+
+  Object.assign(customer, value);
 };
+
 
 Customer.validateCustomerPartial = async (partialCustomer) => {
   const { error } = customerSchema.fork(Object.keys(customerSchema.describe().keys), field => field.optional()).validate(partialCustomer);
@@ -95,6 +107,12 @@ Customer.sanitize = (customer) => {
   if (!customer) return null;
   const { password, ...safeCustomer } = customer;
   return safeCustomer;
+};
+
+Customer.createCustomer = async (customerData) => {
+  await Customer.validateCustomer(customerData);
+  const newCustomer = await Customer.create(customerData);
+  return newCustomer.toJSON();
 };
 
 Customer.findByPhoneNumber = async (phoneNumber) => {

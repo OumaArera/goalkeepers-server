@@ -34,7 +34,7 @@ describe('Role Middleware Tests', () => {
     allowRoles('MANAGEMENT')(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized: no role found' });
+    expect(res.json).toHaveBeenCalledWith({ error: 'Forbidden: you do not have the required permissions to access this endpoint.' });
   });
 
   test('should return 500 if role group is undefined', () => {

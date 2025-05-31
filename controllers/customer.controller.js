@@ -9,8 +9,7 @@ const { getPagination, getPagingData } = require('../utils/pagination');
 class CustomerController {
   static async register(req, res) {
     try {
-      const customer = new Customer(req.body);
-      await customer.save();
+      const customer = await Customer.createCustomer(req.body);
       res.status(201).json({ message: 'Customer registered successfully', customerId: customer.id });
     } catch (err) {
       res.status(400).json({ error: err.message });
@@ -149,8 +148,8 @@ class CustomerController {
       };
 
       const pagination = getPagination(req.query);
-      const { data, totalItems } = await Customer.findAllWithFilters(filters, pagination);
-      const formatted = data.map((item) => keysToCamel(Customer.sanitize(item)));
+      const { totalItems, customers } = await Customer.findAllWithFilters(filters, pagination);
+      const formatted = customers.map((item) => keysToCamel(Customer.sanitize(item)));
 
       const response = getPagingData(formatted, totalItems, pagination.page, pagination.limit);
 

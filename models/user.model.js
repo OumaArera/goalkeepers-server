@@ -107,16 +107,22 @@ const userSchema = Joi.object({
   }),
   email: Joi.string().email(),
   password: Joi.string().min(8),
-  status: Joi.string().valid('active', 'blocked', 'suspended', 'deleted'),
-  avatar: Joi.string().uri().allow(null, ''),
+  status: Joi.string().valid('active', 'blocked', 'suspended', 'deleted').default("active"),
+  avatar: Joi.string().uri().allow(null, '').default(null),
 });
 
 
 User.validateUser = async (user) => {
-  const fullSchema = userSchema.fork(Object.keys(userSchema.describe().keys), (schema) => schema.required());
-  const { error } = fullSchema.validate(user);
+  const { error, value } = userSchema.validate(user, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
+
   if (error) throw new Error(`Validation Error: ${error.message}`);
+
+  Object.assign(user, value);
 };
+
 
 User.validateUserPartial = async (partialUser) => {
   const { error } = userSchema.validate(partialUser);
@@ -135,6 +141,11 @@ User.sanitize = (user) => {
   return safeUser;
 };
 
+User.createUser = async (userData) => {
+  await User.validateUser(userData);
+  const newUser = await User.create(userData);
+  return newUser.toJSON();
+};
 
 User.findActiveByEmail = async (email) => {
   return await User.findOne({ where: { email, status: 'active' }, raw: true, });
