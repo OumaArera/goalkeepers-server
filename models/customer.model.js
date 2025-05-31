@@ -1,206 +1,162 @@
-const db = require('../config/db');
+const { DataTypes, Op } = require('sequelize');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
 const validateInternationalPhone = require('../utils/validatePhone');
+const sequelize = require('../config/sequelize');
 
-class Customer {
-  constructor({ firstName, lastName, phoneNumber, email = null, password }) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.phoneNumber = phoneNumber;
-    this.email = email;
-    this.password = password;
-    this.status = 'active';
-    this.createdAt = new Date();
-    this.modifiedAt = new Date();
-  }
+const Customer = sequelize.define('Customer', {
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    field: 'first_name',
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    field: 'last_name',
+  },
+  phoneNumber: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    field: 'phone_number',
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+    validate: { isEmail: true },
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.ENUM('active', 'blocked', 'suspended', 'deleted'),
+    defaultValue: 'active',
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    field: 'created_at',
+    defaultValue: DataTypes.NOW,
+  },
+  modifiedAt: {
+    type: DataTypes.DATE,
+    field: 'modified_at',
+    defaultValue: DataTypes.NOW,
+  },
+}, {
+  tableName: 'customers',
+  timestamps: false,
+  hooks: {
+    beforeCreate: async (customer) => {
+      await Customer.validateCustomer(customer);
+      customer.password = await bcrypt.hash(customer.password, 10);
+    },
+    beforeUpdate: async (customer) => {
+      customer.modifiedAt = new Date();
+    },
+  },
+});
 
-  static get schema() {
-    return Joi.object({
-      firstName: Joi.string().required(),
-      lastName: Joi.string().required(),
-      phoneNumber: Joi.string().required().custom((value, helpers) => {
-        if (!validateInternationalPhone(value)) {
-          return helpers.error('any.invalid');
-        }
-        return value;
-      }).messages({
-        'any.invalid': 'Invalid phone number format.',
-        'string.empty': 'Phone number is required.',
-      }),
-      email: Joi.string().email().allow(null, ''),
-      password: Joi.string().min(8).required(),
-    });
-  }
-
-  async validate() {
-    const { error } = Customer.schema.validate(this, { allowUnknown: true });
-    if (error) throw new Error(`Validation Error: ${error.message}`);
-  }
-
-  async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-
-  async save() {
-    await this.validate();
-    await this.hashPassword();
-
-    // Check for existing phone number
-    const phoneExists = await db.query('SELECT 1 FROM customers WHERE phone_number = $1', [this.phoneNumber]);
-    if (phoneExists.rowCount > 0) {
-      throw new Error('A buyer with this phone number already exists.');
+const customerSchema = Joi.object({
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  phoneNumber: Joi.string().required().custom((value, helpers) => {
+    if (!validateInternationalPhone(value)) {
+      return helpers.error('any.invalid');
     }
+    return value;
+  }).messages({
+    'any.invalid': 'Invalid phone number format.',
+    'string.empty': 'Phone number is required.',
+  }),
+  email: Joi.string().email().allow(null, ''),
+  password: Joi.string().min(8).required(),
+});
 
-    // Optional email check
-    if (this.email) {
-      const emailExists = await db.query('SELECT 1 FROM customers WHERE email = $1', [this.email]);
-      if (emailExists.rowCount > 0) {
-        throw new Error('A buyer with this email already exists.');
-      }
-    }
+Customer.validateCustomer = async (customer) => {
+  const { error } = customerSchema.validate(customer);
+  if (error) throw new Error(`Validation Error: ${error.message}`);
+};
 
-    const query = `
-      INSERT INTO customers (
-        first_name,
-        last_name,
-        phone_number,
-        email,
-        password,
-        status,
-        created_at,
-        modified_at
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-      RETURNING id
-    `;
+Customer.validateCustomerPartial = async (partialCustomer) => {
+  const { error } = customerSchema.fork(Object.keys(customerSchema.describe().keys), field => field.optional()).validate(partialCustomer);
+  if (error) throw new Error(`Validation Error: ${error.message}`);
+};
 
-    const values = [
-      this.firstName,
-      this.lastName,
-      this.phoneNumber,
-      this.email,
-      this.password,
-      this.status,
-      this.createdAt,
-      this.modifiedAt
+Customer.prototype.toSafeObject = function () {
+  const values = { ...this.get() };
+  delete values.password;
+  return values;
+};
+
+Customer.sanitize = (customer) => {
+  if (!customer) return null;
+  const { password, ...safeCustomer } = customer;
+  return safeCustomer;
+};
+
+Customer.findByPhoneNumber = async (phoneNumber) => {
+  return await Customer.findOne({ where: { phoneNumber }, raw: true });
+};
+
+Customer.findActiveByPhoneNumber = async (phoneNumber) => {
+  return await Customer.findOne({ where: { phoneNumber, status: 'active' }, raw: true });
+};
+
+Customer.validatePassword = async (plainPassword, hashedPassword) => {
+  return await bcrypt.compare(plainPassword, hashedPassword);
+};
+
+Customer.updateById = async (customerId, updateData) => {
+  if (!customerId) throw new Error('Customer ID is required');
+  const customer = await Customer.findByPk(customerId);
+  if (!customer) throw new Error('Customer not found');
+
+  if (updateData.password) {
+    updateData.password = await bcrypt.hash(updateData.password, 10);
+  }
+
+  await Customer.validateCustomerPartial(updateData);
+  await customer.update(updateData);
+
+  return customer.toSafeObject();
+};
+
+Customer.findById = async (id) => {
+  if (!id) throw new Error('Customer ID is required');
+  const customer = await Customer.findByPk(id, {
+    attributes: { exclude: ['password'] },
+    raw: true,
+  });
+  return customer || null;
+};
+
+Customer.findAllWithFilters = async (filters = {}, pagination = {}) => {
+  const where = {};
+  if (filters.status) where.status = filters.status;
+  if (filters.phoneNumber) where.phoneNumber = { [Op.iLike]: `%${filters.phoneNumber}%` };
+  if (filters.name) {
+    where[Op.or] = [
+      { firstName: { [Op.iLike]: `%${filters.name}%` } },
+      { lastName: { [Op.iLike]: `%${filters.name}%` } },
     ];
-
-    try {
-      const result = await db.query(query, values);
-      this.id = result.rows[0].id;
-      return this;
-    } catch (err) {
-      if (err.code === '23505') {
-        throw new Error('Duplicate entry detected for email or phone number.');
-      }
-      throw new Error(`Database Error: ${err.message}`);
-    }
   }
+  if (filters.email) where.email = { [Op.iLike]: `%${filters.email}%` };
 
-  toSafeObject() {
-    const { password, ...safeBuyer } = this;
-    return safeBuyer;
-  }
+  const { limit = 20, offset = 0 } = pagination;
 
-  static sanitize(buyer) {
-    if (!buyer) return null;
-    const { password, ...safeBuyer } = buyer;
-    return safeBuyer;
-  }
+  const { count: totalItems, rows: customers } = await Customer.findAndCountAll({
+    where,
+    attributes: { exclude: ['password'] },
+    order: [['createdAt', 'DESC']],
+    limit,
+    offset,
+    raw: true,
+  });
 
-  static async findByPhoneNumber(phoneNumber) {
-    const result = await db.query('SELECT * FROM customers WHERE phone_number = $1', [phoneNumber]);
-    return result.rows[0] || null;
-  }
-
-  static async validatePassword(plainPassword, hashedPassword) {
-    return await bcrypt.compare(plainPassword, hashedPassword);
-  }
-
-  static async findActiveByPhoneNumber(phoneNumber) {
-    const result = await db.query(
-      'SELECT * FROM customers WHERE phone_number = $1 AND status = $2',
-      [phoneNumber, 'active']
-    );
-    return result.rows[0] || null;
-  }
-
-  static async updateById(buyerId, data) {
-    const schema = Customer.schema.fork(Object.keys(Customer.schema.describe().keys), (field) =>
-      field.optional()
-    );
-
-    const { error } = schema.validate(data);
-    if (error) throw new Error(`Validation Error: ${error.message}`);
-
-    const allowedFields = {
-      firstName: 'first_name',
-      lastName: 'last_name',
-      phoneNumber: 'phone_number',
-      email: 'email',
-      password: 'password',
-    };
-
-    const updates = [];
-    const values = [];
-    let index = 1;
-
-    for (const [key, column] of Object.entries(allowedFields)) {
-      if (data[key] !== undefined) {
-        if (key === 'password') {
-          const hashed = await bcrypt.hash(data[key], 10);
-          updates.push(`${column} = $${index}`);
-          values.push(hashed);
-        } else {
-          updates.push(`${column} = $${index}`);
-          values.push(data[key]);
-        }
-        index++;
-      }
-    }
-
-    if (updates.length === 0) {
-      throw new Error('No valid fields provided for update.');
-    }
-
-    updates.push(`modified_at = $${index}`);
-    values.push(new Date());
-
-    const query = `
-      UPDATE customers SET ${updates.join(', ')} WHERE id = $${index + 1} RETURNING *
-    `;
-
-    values.push(buyerId);
-
-    try {
-      const result = await db.query(query, values);
-      if (result.rows.length === 0) {
-        throw new Error('Buyer not found');
-      }
-      return result.rows[0];
-    } catch (err) {
-      throw new Error(`Database Update Error: ${err.message}`);
-    }
-  }
-
-  static async findById(id) {
-    try {
-      const result = await db.query('SELECT * FROM customers WHERE id = $1', [id]);
-      return result.rows[0] || null;
-    } catch (err) {
-      throw new Error(`Database Retrieval Error (findById): ${err.message}`);
-    }
-  }
-
-  static async findAll() {
-    try {
-      const result = await db.query('SELECT * FROM customers ORDER BY created_at DESC');
-      return result.rows;
-    } catch (err) {
-      throw new Error(`Database Retrieval Error (findAll): ${err.message}`);
-    }
-  }
-
-}
+  return { totalItems, customers };
+};
 
 module.exports = Customer;

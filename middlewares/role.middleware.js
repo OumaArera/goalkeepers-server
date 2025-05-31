@@ -3,7 +3,7 @@ const roleGroups = require('../permissions/roleGroups');
 function allowRoles(groupName) {
   return (req, res, next) => {
     if (!req.user || !req.user.role) {
-      return res.status(401).json({ error: 'Unauthorized: no role found' });
+      return res.status(401).json({ error: "Forbidden: you do not have the required permissions to access this endpoint." });
     }
 
     const allowedRoles = roleGroups[groupName];

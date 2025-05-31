@@ -4,6 +4,7 @@ const TokenService = require('../utils/tokenService');
 const { generateRandomPassword } = require('../utils/generateRandomPassword');
 const sendMail = require('../config/mailer');
 const { keysToCamel } = require('../utils/caseConverter');
+const { getPagination, getPagingData } = require('../utils/pagination');
 
 class CustomerController {
   static async register(req, res) {
@@ -32,9 +33,9 @@ class CustomerController {
 
       const payload = {
         customerId: customer.id,
-        firstName: customer.first_name,
-        lastName: customer.last_name,
-        phoneNumber: customer.phone_number,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        phoneNumber: customer.phoneNumber,
         email: customer.email
       };
 
@@ -47,6 +48,36 @@ class CustomerController {
       res.status(500).json({ error: err.message });
     }
   }
+
+  static async changePassword(req, res) {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const phoneNumber = req.user?.phoneNumber;
+      if (!phoneNumber) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current and new password are required' });
+    }
+
+    const customer = await Customer.findActiveByPhoneNumber(phoneNumber);
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    const isMatch = await Customer.validatePassword(oldPassword, customer.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Incorrect current password' });
+    }
+
+    await Customer.updateById(customer.id, { password: newPassword });
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 
   static async recoverPassword(req, res) {
     try {
@@ -103,6 +134,27 @@ class CustomerController {
         message: 'Customer updated successfully',
         customer: camelCaseCustomer
       });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  static async getAllCustomers(req, res) {
+    try {
+      const filters = {
+        status: req.query.status,
+        phoneNumber: req.query.phoneNumber,
+        name: req.query.name,
+        email: req.query.email
+      };
+
+      const pagination = getPagination(req.query);
+      const { data, totalItems } = await Customer.findAllWithFilters(filters, pagination);
+      const formatted = data.map((item) => keysToCamel(Customer.sanitize(item)));
+
+      const response = getPagingData(formatted, totalItems, pagination.page, pagination.limit);
+
+      res.status(200).json(response);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

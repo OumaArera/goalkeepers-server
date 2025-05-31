@@ -32,8 +32,8 @@ class UserController {
 
       const payload = { 
         userId: user.id,  
-        firstName: user.first_name, 
-        lastName: user.last_name,
+        firstName: user.firstName, 
+        lastName: user.lastName,
         role: user.role,
         department: user.department,
         email: user.email
@@ -42,7 +42,6 @@ class UserController {
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '8h'
       });
-
       const encryptedToken = TokenService.encrypt(token);
 
       res.status(200).json({ message: 'Login successful', token: encryptedToken });
@@ -51,14 +50,14 @@ class UserController {
     }
   }
 
- static async changePassword(req, res) {
+  static async changePassword(req, res) {
     try {
       const { oldPassword, newPassword } = req.body;
 
       const email = req.user?.email;
       if (!email) return res.status(401).json({ error: 'Unauthorized' });
       
-      const user = await User.findByEmail(email);
+      const user = await User.findByEmailRegardlessOfStatus(email);
 
       if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -119,7 +118,7 @@ class UserController {
   static async getUser(req, res) {
     try {
       const { userId } = req.params;
-      const user = await User.findById(userId);
+      const user = await User.findSafeById(userId);
 
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
@@ -145,19 +144,19 @@ class UserController {
         status: req.query.status,
       };
 
-      const users = await User.findAll(filters);
+      const users = await User.findAllWithFilters(filters);
 
       const sanitizedUsers = users.map(user => {
         const {
           id,
-          first_name,
-          last_name,
+          firstName,
+          lastName,
           email,
           role,
           department,
           status
         } = user;
-        return { id, firstName: first_name, lastName: last_name, email, role, department, status };
+        return { id, firstName: firstName, lastName: lastName, email, role, department, status };
       });
 
       res.json(sanitizedUsers);
