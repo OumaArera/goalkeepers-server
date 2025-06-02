@@ -1,13 +1,14 @@
 const { DataTypes, Op } = require('sequelize');
 const Joi = require('joi');
 const sequelize = require('../config/sequelize');
+const { validate: isUuid } = require('uuid');
 const User = require('./user.model');
 
 const Item = sequelize.define('Item', {
   name: { type: DataTypes.STRING, allowNull: false },
   description: { type: DataTypes.TEXT, allowNull: false },
   category: {
-    type: DataTypes.ENUM('jersey', 'gloves', 'accessory'),
+    type: DataTypes.ENUM('jersey', 'gloves', 'accessory', 'ticket'),
     allowNull: false,
   },
   price: { type: DataTypes.FLOAT, allowNull: false },
@@ -18,20 +19,21 @@ const Item = sequelize.define('Item', {
     field: 'image_url',
     validate: { isUrl: true },
   },
-  brand: { type: DataTypes.STRING, allowNull: false },
-  size: { type: DataTypes.JSONB, allowNull: false },
-  color: { type: DataTypes.STRING, allowNull: false },
-  material: { type: DataTypes.STRING, allowNull: false },
-  team: { type: DataTypes.STRING, allowNull: true },
-  playerName: { type: DataTypes.STRING, allowNull: false, field: 'player_name' },
-  playerNumber: { type: DataTypes.STRING, allowNull: false, field: 'player_number' },
-  discount: { type: DataTypes.FLOAT, defaultValue: 0 },
-  available: { type: DataTypes.BOOLEAN, defaultValue: true },
+  brand: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
+  size: { type: DataTypes.JSONB, allowNull: true, defaultValue: [] },
+  color: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
+  material: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
+  team: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
+  playerName: { type: DataTypes.STRING, allowNull: true, field: 'player_name', defaultValue: null },
+  playerNumber: { type: DataTypes.STRING, allowNull: true, field: 'player_number', defaultValue: null },
+  discount: { type: DataTypes.FLOAT, allowNull: true, defaultValue: 0 },
+  available: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 }, {
   tableName: 'items',
   timestamps: true,
   underscored: true,
 });
+
 
 // Relational Mapping
 Item.belongsTo(User, {
@@ -49,44 +51,66 @@ User.hasMany(Item, {
 });
 
 
-// Joi Schema for Validation
-const itemSchema = Joi.object({
-  name: Joi.string().required(),
-  description: Joi.string().required(),
-  category: Joi.string().valid('jersey', 'gloves', 'accessory').required(),
-  price: Joi.number().positive().required(),
-  quantity: Joi.number().integer().min(0).required(),
-  imageUrl: Joi.string().uri().required(),
-  brand: Joi.string().required(),
+const baseItemSchema = {
+  name: Joi.string(),
+  description: Joi.string(),
+  category: Joi.string().valid('jersey', 'gloves', 'accessory', 'ticket'),
+  price: Joi.number().positive(),
+  quantity: Joi.number().integer().min(0),
+  imageUrl: Joi.string().uri(),
+  brand: Joi.string().allow(null, ''),
   size: Joi.alternatives().try(
-    Joi.string(),
     Joi.array().items(
       Joi.object({
         size: Joi.string().required(),
         qty: Joi.number().integer().required(),
       })
-    )
-  ),
-  color: Joi.string().required(),
-  material: Joi.string().required(),
+    ),
+    Joi.array().length(0),
+    Joi.string().allow(null, '')
+  ).default([]),
+  color: Joi.string().allow(null, ''),
+  material: Joi.string().allow(null, ''),
   team: Joi.string().allow(null, ''),
-  playerName: Joi.string().required(),
-  playerNumber: Joi.string().required(),
+  playerName: Joi.string().allow(null, ''),
+  playerNumber: Joi.string().allow(null, ''),
   discount: Joi.number().min(0).default(0),
   available: Joi.boolean().default(true),
-  promoterId: Joi.string().uuid().allow(null, '').default(null),
+  promoterId: Joi.string().uuid().allow(null, ''),
+};
+
+const itemSchema = Joi.object({
+  ...baseItemSchema,
+  name: baseItemSchema.name.required(),
+  description: baseItemSchema.description.required(),
+  category: baseItemSchema.category.required(),
+  price: baseItemSchema.price.required(),
+  quantity: baseItemSchema.quantity.required(),
+  imageUrl: baseItemSchema.imageUrl.required(),
+  // Optional fields below
+  brand: baseItemSchema.brand,
+  size: baseItemSchema.size,
+  color: baseItemSchema.color,
+  material: baseItemSchema.material,
+  team: baseItemSchema.team,
+  playerName: baseItemSchema.playerName,
+  playerNumber: baseItemSchema.playerNumber,
+  discount: baseItemSchema.discount,
+  available: baseItemSchema.available,
 });
 
-// Validation Methods
+const partialItemSchema = Joi.object(baseItemSchema);
+
 Item.validateItem = async (itemData) => {
-  const { error } = itemSchema.validate(itemData);
+  const { error } = itemSchema.validate(itemData, { abortEarly: false });
   if (error) throw new Error(`Validation Error: ${error.message}`);
 };
 
 Item.validatePartialItem = async (partialData) => {
-  const { error } = itemSchema.validate(partialData, { presence: 'optional' });
+  const { error } = partialItemSchema.validate(partialData, { abortEarly: false });
   if (error) throw new Error(`Validation Error: ${error.message}`);
 };
+
 
 // Create Item
 Item.createItem = async (itemData) => {
@@ -116,22 +140,48 @@ Item.updateItemById = async (id, updateData) => {
   return item.toJSON();
 };
 
-// Search / Filter Items
+
 Item.findAllWithFilters = async (filters = {}, pagination = {}) => {
   const where = {};
 
-  if (filters.name) where.name = { [Op.iLike]: `%${filters.name}%` };
-  if (filters.category) where.category = filters.category;
-  if (filters.brand) where.brand = { [Op.iLike]: `%${filters.brand}%` };
-  if (filters.available !== undefined) where.available = filters.available;
-  if (filters.promoterId) where.promoterId = filters.promoterId;
+  if (filters.name) {
+    where.name = { [Op.iLike]: `%${filters.name}%` };
+  }
+
+  if (filters.category) {
+    where.category = filters.category;
+  }
+
+  if (filters.brand) {
+    where.brand = { [Op.iLike]: `%${filters.brand}%` };
+  }
+
+  if (filters.available !== undefined) {
+    where.available = filters.available;
+  }
+
+  // Handle promoterId gracefully
+  if (filters.promoterId !== undefined) {
+    if (filters.promoterId === null) {
+      where.promoterId = null;
+    } else if (isUuid(filters.promoterId)) {
+      where.promoterId = filters.promoterId;
+    } else {
+      // Invalid UUID, so ignore the promoterId filter
+      console.warn('Invalid promoterId provided, skipping filter.');
+    }
+  }
 
   const { limit = 20, offset = 0 } = pagination;
 
   const { rows: items, count: totalItems } = await Item.findAndCountAll({
     where,
     include: [
-      { model: User, as: 'promoter', attributes: ['id', 'firstName', 'lastName'] },
+      {
+        model: User,
+        as: 'promoter',
+        attributes: ['id', 'firstName', 'lastName'],
+      },
     ],
     order: [['created_at', 'DESC']],
     limit,

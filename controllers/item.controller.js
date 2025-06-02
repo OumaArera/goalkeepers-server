@@ -112,10 +112,16 @@ class ItemController {
       if (updates.size && typeof updates.size === 'string') {
         try {
           updates.size = JSON.parse(updates.size);
+          
+          const sizeValidation = validateSizeQuantityMatch(updates.quantity, updates.size);
+          if (!sizeValidation.isValid) {
+            return res.status(400).json({ message: sizeValidation.message });
+          }
         } catch (err) {
           return res.status(400).json({ message: 'Invalid JSON format for size' });
         }
       }
+      
 
       // Validate quantity with size if applicable
       if (updates.quantity && updates.size) {
@@ -127,9 +133,9 @@ class ItemController {
       }
 
       // Handle image upload
-      const files = req.files || [];
-      if (files.length) {
-        const imageUrls = await uploadFilesToDrive([files[0]]);
+      const file = req.file;
+      if (file) {
+        const imageUrls = await uploadFilesToDrive([file]);
         updates.imageUrl = imageUrls[0];
       }
 
