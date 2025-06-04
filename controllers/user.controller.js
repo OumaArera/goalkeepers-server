@@ -4,16 +4,29 @@ const { generateRandomPassword } = require('../utils/generateRandomPassword');
 const TokenService = require('../utils/tokenService');
 const { keysToCamel } = require('../utils/caseConverter');
 const sendMail = require('../config/mailer');
+const { ValidationError } = require('sequelize');
 
 class UserController {
+  
+
   static async register(req, res) {
     try {
       const user = await User.createUser(req.body);
       res.status(201).json({ message: 'User created successfully', userId: user.id });
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      console.error("Error: ", err);
+      if (err instanceof ValidationError) {
+        const errorMessages = err.errors.map(e => ({
+          field: e.path,
+          message: e.message,
+          type: e.type,
+        }));
+        return res.status(400).json({ error: 'Validation failed', details: errorMessages });
+      }
+      res.status(400).json({ error: err.message || 'An unexpected error occurred' });
     }
   }
+
 
   static async login(req, res) {
     try {

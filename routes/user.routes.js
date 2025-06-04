@@ -6,19 +6,19 @@ const { allowRoles } = require('../middlewares/role.middleware');
 const { conditionalSuperuserAccess } = require('../middlewares/conditionalSuperuser.middleware');
 
 // Authentication & Account
-router.post('/register', conditionalSuperuserAccess, UserController.register);
-router.post('/login', UserController.login);
-router.post('/recover-password', UserController.recoverPassword);
+router.post('/auth/register', conditionalSuperuserAccess, UserController.register);
+router.post('/auth/login', UserController.login);
+router.post('/auth/recover-password', UserController.recoverPassword);
 
 router.use(authenticateToken);
 
-router.get('/', allowRoles('MANAGEMENT'), UserController.getUsers);
-router.get('/:userId', allowRoles('ALL_USERS'), UserController.getUser);
-router.put('/:userId', allowRoles('ALL_USERS'), UserController.updateUser);
+router.get('/users', allowRoles('MANAGEMENT'), UserController.getUsers);
+router.get('/users/:userId', allowRoles('ALL_USERS'), UserController.getUser);
+router.put('/users/:userId', allowRoles('ALL_USERS'), UserController.updateUser);
 
-router.post('/change-password', allowRoles('ALL_USERS'), UserController.changePassword);
+router.post('/auth/change-password', allowRoles('ALL_USERS'), UserController.changePassword);
 
-router.patch('/:userId/block', allowRoles('SUPERUSER'), UserController.blockUser);
-router.patch('/:userId/unblock', allowRoles('SUPERUSER'), UserController.unblockUser);
+router.patch('/auth/:userId/block', allowRoles('SUPERUSER'), UserController.blockUser);
+router.patch('/auth/:userId/unblock', allowRoles('SUPERUSER'), UserController.unblockUser);
 
 module.exports = router;
