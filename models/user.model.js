@@ -1,10 +1,13 @@
-const { DataTypes, Op } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
-const Joi = require('joi');
-const validateInternationalPhone = require('../utils/validatePhone');
 const sequelize = require('../config/sequelize');
 
 const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4,
+  },
   firstName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -64,157 +67,34 @@ const User = sequelize.define('User', {
     allowNull: true,
     validate: { isUrl: true },
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    defaultValue: DataTypes.NOW,
-  },
-  modifiedAt: {
-    type: DataTypes.DATE,
-    field: 'modified_at',
-    defaultValue: DataTypes.NOW,
-  },
 }, {
   tableName: 'users',
-  timestamps: false,
+  timestamps: true,
+  underscored: true,
   hooks: {
     beforeCreate: async (user) => {
-      await User.validateUser(user);
-      user.password = await bcrypt.hash(user.password, 10);
+      if (user.password) {
+        user.password = await bcrypt.hash(user.password, 10);
+      }
     },
     beforeUpdate: async (user) => {
-      user.modifiedAt = new Date();
+      if (user.changed('password') && user.password) {
+        user.password = await bcrypt.hash(user.password, 10);
+      }
     },
   },
 });
 
-const userSchema = Joi.object({
-  firstName: Joi.string(),
-  middleNames: Joi.string().allow(null, ''),
-  lastName: Joi.string(),
-  dateOfBirth: Joi.date(),
-  nationalIdOrPassportNo: Joi.string(),
-  role: Joi.string().valid('superuser', 'manager', 'player', 'junior', 'director'),
-  department: Joi.string().valid('Sales', 'Analysis', 'Services', 'Donors', 'IT', 'Players', 'Management'),
-  phonenumber: Joi.string().custom((value, helpers) => {
-    if (!validateInternationalPhone(value)) {
-      return helpers.error('any.invalid');
-    }
-    return value;
-  }).messages({
-    'any.invalid': 'Invalid phone number format.',
-    'string.empty': 'Phone number is required.',
-  }),
-  email: Joi.string().email(),
-  password: Joi.string().min(8),
-  status: Joi.string().valid('active', 'blocked', 'suspended', 'deleted').default("active"),
-  avatar: Joi.string().uri().allow(null, '').default(null),
-});
-
-
-User.validateUser = async (user) => {
-  const { error, value } = userSchema.validate(user, {
-    abortEarly: false,
-    stripUnknown: true,
-  });
-
-  if (error) throw new Error(`Validation Error: ${error.message}`);
-
-  Object.assign(user, value);
-};
-
-
-User.validateUserPartial = async (partialUser) => {
-  const { error } = userSchema.validate(partialUser);
-  if (error) throw new Error(`Validation Error: ${error.message}`);
-};
-
+// Instance method to exclude password from JSON output
 User.prototype.toJSON = function () {
   const values = { ...this.get() };
   delete values.password;
   return values;
 };
 
-User.sanitize = (user) => {
-  if (!user) return null;
-  const { password, ...safeUser } = user;
-  return safeUser;
-};
-
-User.createUser = async (userData) => {
-  await User.validateUser(userData);
-  const newUser = await User.create(userData);
-  return newUser.toJSON();
-};
-
-User.findActiveByEmail = async (email) => {
-  return await User.findOne({ where: { email, status: 'active' }, raw: true, });
-};
-
-
-User.findByEmailRegardlessOfStatus = async (email) => {
-  return await User.findOne({ where: { email }, raw: true });
-};
-
+// Static method for password validation
 User.validatePassword = async (plainPassword, hashedPassword) => {
   return await bcrypt.compare(plainPassword, hashedPassword);
-};
-
-User.findSafeById = async (id) => {
-  if (!id) throw new Error('User ID is required');
-
-  const user = await User.findByPk(id, {
-    attributes: { exclude: ['password'] },
-    raw: true,
-  });
-
-  if (!user) throw new Error('User not found');
-  return user;
-};
-
-User.updateById = async (userId, updateData) => {
-  if (!userId) throw new Error('User ID is required');
-
-  const user = await User.findByPk(userId);
-  if (!user) throw new Error('User not found');
-
-  const dataToUpdate = { ...updateData };
-
-  if (dataToUpdate.password) {
-    dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
-  }
-
-  await User.validateUserPartial(dataToUpdate);
-
-  await user.update(dataToUpdate);
-
-  return user.toJSON();
-};
-
-
-User.unblockUserById = async (id) => {
-  return await User.updateById(id, { status: 'active' });
-};
-
-User.blockUserById = async (id) => {
-  return await User.updateById(id, { status: 'blocked' });
-};
-
-User.findAllWithFilters = async (filters = {}) => {
-  const where = {};
-  if (filters.firstName) where.firstName = { [Op.iLike]: `%${filters.firstName}%` };
-  if (filters.lastName) where.lastName = { [Op.iLike]: `%${filters.lastName}%` };
-  if (filters.email) where.email = { [Op.iLike]: `%${filters.email}%` };
-  if (filters.role) where.role = filters.role;
-  if (filters.department) where.department = filters.department;
-  if (filters.status) where.status = filters.status;
-
-  return await User.findAll({
-    where,
-    attributes: { exclude: ['password'] },
-    order: [['createdAt', 'ASC']],
-    raw: true,
-  });
 };
 
 module.exports = User;

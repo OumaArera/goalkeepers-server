@@ -12,6 +12,8 @@ const GoalkeepingStats = require('./goalkeepingStats.model');
 const DisciplineRecords = require('./disciplineRecords.model');
 const DefensiveStats = require('./defensiveStats.model');
 const TeamplayStats = require('./teamplayStats.model');
+const NewRequest = require('./newRequest.model');
+const League = require('./league.model');
 
 Item.belongsTo(User, { foreignKey: 'promoterId', as: 'promoter_' });
 User.hasMany(Item, { foreignKey: 'promoterId', as: 'promotedItems_' });
@@ -62,4 +64,6 @@ module.exports = {
   DisciplineRecords,
   DefensiveStats,
   TeamplayStats,
+  NewRequest,
+  League
 };

@@ -1,5 +1,6 @@
 const express = require('express');
-// const { sequelize } = require('./models');
+const session = require('express-session');
+const passport = require('./config/passport');
 const app = express();
 const port = 3000;
 
@@ -7,10 +8,19 @@ const port = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.get('/', (req, res) => {
   res.send('Hello, Express!');
 });
-app.use('/v1/api', require('./routes/user.routes'));
+app.use('/v1/api/users', require('./routes/user.routes'));
 app.use('/v1/api/customers', require('./routes/customer.routes'));
 app.use('/v1/api/items', require('./routes/item.routes'));
 app.use('/v1/api/goalkeepers', require('./routes/goalkeeper.routes'));
@@ -23,6 +33,8 @@ app.use('/v1/api/honors-and-awards', require('./routes/honorsAndAwards.routes'))
 app.use('/v1/api/defensive-stats', require('./routes/defensiveStats.routes'));
 app.use('/v1/api/former-clubs', require('./routes/formerClubs.routes'));
 app.use('/v1/api/discipline-records', require('./routes/disciplineRecord.routes'));
+app.use('/v1/api/new-requests', require('./routes/newRequest.routes'));
+app.use('/v1/api/leagues', require('./routes/league.routes'));
 
 // Catch-all route for non-existent endpoints
 app.use((req, res, next) => {
