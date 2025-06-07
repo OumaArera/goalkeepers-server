@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 
 // Configure storage (optional)
-const storage = multer.memoryStorage(); // if uploading directly to Google Drive
+const storage = multer.memoryStorage(); 
 
 // You can add filters or limits here if needed
 const fileFilter = (req, file, cb) => {

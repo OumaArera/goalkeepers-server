@@ -35,6 +35,8 @@ app.use('/v1/api/former-clubs', require('./routes/formerClubs.routes'));
 app.use('/v1/api/discipline-records', require('./routes/disciplineRecord.routes'));
 app.use('/v1/api/new-requests', require('./routes/newRequest.routes'));
 app.use('/v1/api/leagues', require('./routes/league.routes'));
+app.use('/v1/api/partners', require('./routes/partner.routes'));
+app.use('/v1/api/orders', require('./routes/order.routes'));
 
 // Catch-all route for non-existent endpoints
 app.use((req, res, next) => {

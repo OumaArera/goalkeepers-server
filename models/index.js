@@ -14,6 +14,9 @@ const DefensiveStats = require('./defensiveStats.model');
 const TeamplayStats = require('./teamplayStats.model');
 const NewRequest = require('./newRequest.model');
 const League = require('./league.model');
+const Partner = require('./partner.model');
+const Order = require('./order.model');
+const Payment = require('./payment.model');
 
 Item.belongsTo(User, { foreignKey: 'promoterId', as: 'promoter_' });
 User.hasMany(Item, { foreignKey: 'promoterId', as: 'promotedItems_' });
@@ -48,6 +51,13 @@ DefensiveStats.belongsTo(Goalkeeper, { foreignKey: 'goalkeeperId', as: 'goalkeep
 Goalkeeper.hasOne(TeamplayStats, { foreignKey: 'goalkeeperId', as: 'teamplayStats' });
 TeamplayStats.belongsTo(Goalkeeper, { foreignKey: 'goalkeeperId', as: 'goalkeeper' });
 
+Customer.hasMany(Order, { foreignKey: 'customerId', as: 'orders' });
+Item.hasMany(Order, { foreignKey: 'itemId', as: 'items' });
+Order.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+
+Order.hasOne(Payment, { foreignKey: 'orderId', as: 'payments' });
+Payment.belongsTo(Order, { foreignKey: 'orderId', as: 'orders' });
+
 
 module.exports = {
   sequelize,
@@ -65,5 +75,8 @@ module.exports = {
   DefensiveStats,
   TeamplayStats,
   NewRequest,
-  League
+  League,
+  Partner,
+  Order,
+  Payment
 };

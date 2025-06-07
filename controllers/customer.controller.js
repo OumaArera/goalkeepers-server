@@ -66,6 +66,7 @@ class CustomerController {
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
+      console.log("Token: ", token)
       const encryptedToken = TokenService.encrypt(token);
 
       return res.status(200).json({ 
