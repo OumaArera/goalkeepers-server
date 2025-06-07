@@ -56,7 +56,7 @@ Item.hasMany(Order, { foreignKey: 'itemId', as: 'items' });
 Order.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 
 Order.hasOne(Payment, { foreignKey: 'orderId', as: 'payments' });
-Payment.belongsTo(Order, { foreignKey: 'orderId', as: 'orders' });
+Payment.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 
 
 module.exports = {

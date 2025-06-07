@@ -22,21 +22,21 @@ router.get(
   OrderController.getOrderById
 );
 
-// POST - Create new league
+// POST - Create new order
 router.post(
   '/',
   OrderValidation.validationRules(),
   OrderController.createOrder
 );
 
-// PUT - Update league by ID
+// PUT - Update order by ID
 router.put(
   '/:id',
   OrderValidation.updateRules(),
   OrderController.updateOrder
 );
 
-// DELETE - Remove league by ID
+// DELETE - Remove order by ID
 router.delete(
   '/:id',
   OrderValidation.deleteRules(),

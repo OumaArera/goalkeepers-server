@@ -30,13 +30,26 @@ const Payment = sequelize.define('Payment', {
   },
   transactionId: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
     field: 'transaction_id',
   },
-  reference: {
+  checkoutRequestId: {
     type: DataTypes.STRING,
     allowNull: true,
+    unique: true,
+    field: 'checkout_request_id',
+  },
+  merchantRequestID: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+    field: 'merchant_request_id',
+  },
+  reference: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
   },
   statusMessage: {
     type: DataTypes.STRING,
@@ -46,13 +59,13 @@ const Payment = sequelize.define('Payment', {
   phoneNumber: {
     type: DataTypes.STRING,
     allowNull: true,
-    field: 'phone_number',
+    field: 'phoneNumber',
   },
-  cardNumber: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    field: 'card_number',
-  },
+  // cardNumber: {
+  //   type: DataTypes.STRING,
+  //   allowNull: true,
+  //   field: 'card_number',
+  // },
   metadata: {
     type: DataTypes.JSON,
     allowNull: true,
@@ -69,3 +82,5 @@ const Payment = sequelize.define('Payment', {
     },
   },
 });
+
+module.exports = Payment;

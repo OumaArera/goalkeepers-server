@@ -1,15 +1,23 @@
-const { customAlphabet } = require('nanoid');
+const { Payment } = require('../models');
 
-class TransactionIDGenerator {
-  constructor() {
-    this.nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8);
-  }
-  generate() {
+class ReferenceNumberGenerator {
+  static async generate() {
+    const { customAlphabet } = await import('nanoid');
+    const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8);
     const now = new Date();
     const datePart = now.toISOString().slice(2, 10).replace(/-/g, '');
-    const randomPart = this.nanoid();
-    return `${datePart}${randomPart}`;
+    console.log("Date: ", datePart);
+
+    let reference;
+
+    while (true){
+      const randomPart = nanoid();
+      reference = `${datePart}${randomPart}`;
+      const exists = await Payment.findOne({ where: { reference } });
+      if (!exists) break;
+    }
+    return reference;
   }
 }
 
-module.exports = TransactionIDGenerator;
+module.exports = ReferenceNumberGenerator;

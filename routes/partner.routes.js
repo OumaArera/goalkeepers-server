@@ -23,7 +23,7 @@ router.get(
 // Protect write routes
 router.use(authenticateToken);
 
-// POST - Create new league
+// POST - Create new partner
 router.post(
   '/',
   upload.single('image'),
@@ -32,7 +32,7 @@ router.post(
   PartnerController.createPartner
 );
 
-// PUT - Update league by ID
+// PUT - Update partner by ID
 router.put(
   '/:id',
   upload.single('image'),
@@ -41,7 +41,7 @@ router.put(
   PartnerController.updatePartner
 );
 
-// DELETE - Remove league by ID
+// DELETE - Remove partner by ID
 router.delete(
   '/:id',
   PartnerValidation.deleteRules(),
