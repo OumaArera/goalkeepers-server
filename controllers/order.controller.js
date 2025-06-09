@@ -6,6 +6,7 @@ const { keysToCamel } = require('../utils/caseConverter');
 const OrderFilters = require('../filters/orderFilters');
 const OrderNumberGenerator = require('../utils/orderNumber');
 
+
 class OrderController {
   
   static async createOrder(req, res) {
@@ -103,6 +104,7 @@ class OrderController {
       return res.status(500).json({ message: 'Server error', error });
     }
   }
+
 
   static async getAllOrders(req, res) {
     const errors = validationResult(req);

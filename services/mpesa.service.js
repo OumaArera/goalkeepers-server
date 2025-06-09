@@ -99,7 +99,6 @@ class MpesaPayment {
           },
         }
       );
-      console.log("Response: ", response.data);
 
       return { success: true, data: response.data };
     } catch (error) {

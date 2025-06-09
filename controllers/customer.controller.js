@@ -66,7 +66,10 @@ class CustomerController {
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
-      // console.log("Token: ", token)
+      const userId = null;
+      await TokenService.invalidateAllUserTokens(customer.id);
+      await TokenService.saveToken(userId, customer.id, token, new Date(Date.now() + 8 * 60 * 60 * 1000));
+      console.log("Token: ", token);
       const encryptedToken = TokenService.encrypt(token);
 
       return res.status(200).json({ 

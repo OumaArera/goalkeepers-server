@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { Token } = require('../models');
 require('dotenv').config();
 
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
@@ -20,6 +21,24 @@ const TokenService = {
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
+  },
+
+  async saveToken(userId=null, customerId=null, token, expiresAt) {
+    const newToken = await Token.create({ userId, customerId,  token, expiresAt });
+    return newToken;
+  },
+
+  async invalidateAllUserTokens(userId) {
+    await Token.destroy({ where: { userId } });
+  },
+
+  async invalidateToken(token) {
+    await Token.destroy({ where: { token } });
+  },
+
+  async isTokenValid(token) {
+    const record = await Token.findOne({ where: { token } });
+    return !!record;
   }
 };
 

@@ -6,7 +6,6 @@ class ReferenceNumberGenerator {
     const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8);
     const now = new Date();
     const datePart = now.toISOString().slice(2, 10).replace(/-/g, '');
-    console.log("Date: ", datePart);
 
     let reference;
 

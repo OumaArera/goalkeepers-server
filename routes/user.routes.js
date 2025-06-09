@@ -5,6 +5,7 @@ const { authenticateToken } = require('../middlewares/auth.middleware');
 const { allowRoles } = require('../middlewares/role.middleware');
 const { conditionalSuperuserAccess } = require('../middlewares/conditionalSuperuser.middleware');
 const UserValidation = require('../validators/userValidation');
+const LogoutService = require('../services/logout.service');
 
 // Authentication & Account
 router.post(
@@ -40,12 +41,11 @@ router.get(
     UserController.getUserById
 );
 
-// router.put(
-//     '/users/:userId', 
-//     allowRoles('ALL_USERS'),
-//     UserValidation.updateRules(),
-//     UserController.updateUser
-// );
+router.post(
+    '/users/auth/logout', 
+    allowRoles('ALL_USERS'),
+    LogoutService.logout
+);
 
 router.put('/users/:userId', (req, res, next) => {
   if (req.user.userId !== req.params.userId) {

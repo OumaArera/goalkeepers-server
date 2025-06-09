@@ -68,7 +68,10 @@ class UserController {
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
-      console.log("Token: ", token);
+      const customerId = null;
+      await TokenService.invalidateAllUserTokens(user.id);
+      await TokenService.saveToken(user.id, customerId, token, new Date(Date.now() + 8 * 60 * 60 * 1000));
+      // console.log("Token After: ", token);
       const encryptedToken = TokenService.encrypt(token);
 
       return res.status(200).json({ 
@@ -80,6 +83,7 @@ class UserController {
       return res.status(500).json({ message: 'Server error', error });
     }
   }
+
 
   static async changePassword(req, res) {
     const errors = validationResult(req);

@@ -9,6 +9,7 @@ const router = express.Router();
 // Protect write routes
 router.use(authenticateToken);
 
+
 // Public GET endpoints
 router.get(
   '/',

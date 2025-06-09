@@ -3,6 +3,7 @@ const CustomerController = require('../controllers/customer.controller');
 const { authenticateToken } = require('../middlewares/auth.middleware');
 const { allowRoles } = require('../middlewares/role.middleware');
 const CustomerValidation = require('../validators/customerValidation');
+const LogoutService = require('../services/logout.service');
 
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
@@ -52,6 +53,11 @@ router.post(
   '/auth/signin', 
   CustomerValidation.loginValidationRules(), 
   CustomerController.login
+);
+
+router.post(
+    '/auth/logout',
+    LogoutService.logout
 );
 
 router.post(

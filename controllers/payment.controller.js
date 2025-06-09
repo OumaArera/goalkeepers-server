@@ -5,7 +5,7 @@ const { getPagination, getPagingData } = require('../utils/pagination');
 const { keysToCamel } = require('../utils/caseConverter');
 const PaymentFilters = require('../filters/paymentFilters');
 const ReferenceNumberGenerator = require('../utils/transactionNumber');
-const MpesaPayment = require('../middlewares/mpesa.middleware');
+const MpesaPayment = require('../services/mpesa.service');
 
 class PaymentController {
 
@@ -29,7 +29,6 @@ class PaymentController {
 
       // Generate reference number
       const reference = await ReferenceNumberGenerator.generate();
-      console.log("Reference Number: ", reference)
       // Create payment record
       const paymentData = {
         orderId,
@@ -68,8 +67,6 @@ class PaymentController {
       const statusMessage = mpesaResponse.data.CustomerMessage;
       const checkoutRequestID = mpesaResponse.data.CheckoutRequestID;
       
-      console.log("Mpesa Response: ", statusMessage);
-      
       await payment.update({
         statusMessage: JSON.stringify(statusMessage),
         checkoutRequestId: checkoutRequestID,
@@ -78,7 +75,7 @@ class PaymentController {
       await transaction.commit();
 
       // Start polling for transaction status
-      console.log('Starting transaction status polling...');
+      // console.log('Starting transaction status polling...');
       const pollResult = await MpesaPayment.pollTransactionStatus(checkoutRequestID);
 
       // Start a new transaction for updating the final status
