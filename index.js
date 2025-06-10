@@ -1,8 +1,33 @@
 const express = require('express');
+const cors = require('cors');
 const session = require('express-session');
 const passport = require('./config/passport');
+require('dotenv').config();
+
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+
+const allowedOrigins = [
+  process.env.CORS_ORIGIN_1,
+  process.env.CORS_ORIGIN_2,
+  process.env.CORS_ORIGIN_3,
+  process.env.CORS_ORIGIN_4,
+].filter(Boolean);
+
+// CORS config
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Middleware to parse JSON
 app.use(express.json());
