@@ -121,7 +121,7 @@ class GoalkeeperController {
           {
             model: User,
             as: 'user',
-            attributes: { exclude: ['password', 'id', 'role', 'department', 'status', 'avatar', 'createdAt', 'modifiedAt'] },
+            attributes: { exclude: ['password', 'id', 'role', 'department', 'status', 'avatar', 'createdAt', 'updatedAt'] },
             required: false
           }
         ],
@@ -192,7 +192,7 @@ class GoalkeeperController {
           {
             model: User,
             as: 'user',
-            attributes: { exclude: ['password', 'id', 'role', 'department', 'status', 'avatar', 'createdAt', 'modifiedAt'] },
+            attributes: { exclude: ['password', 'id', 'role', 'department', 'status', 'avatar', 'createdAt', 'updatedAt'] },
             required: false
           }
         ]
@@ -267,7 +267,6 @@ class GoalkeeperController {
     if (query.weight) filters.weight = query.weight;
     if (query.jersey) filters.jersey = query.jersey;
     if (query.internationalCaps) filters.internationalCaps = query.internationalCaps;
-
     return filters;
   }
 }
