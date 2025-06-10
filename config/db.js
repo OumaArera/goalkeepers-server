@@ -4,7 +4,8 @@ const path = require('path');
 require('dotenv').config();
 
 // Load SSL Certificate
-const sslCa = fs.readFileSync(path.resolve(__dirname, '..', process.env.DB_SSL_CA_PATH)).toString();
+// const sslCa = fs.readFileSync(path.resolve(__dirname, '..', process.env.DB_SSL_CA_PATH)).toString();
+const sslCa = process.env.CA_CERT;
 
 const pool = new Pool({
   user: process.env.DB_USER,

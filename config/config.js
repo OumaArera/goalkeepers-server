@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const sslCa = fs.readFileSync(path.resolve(__dirname, '..', process.env.DB_SSL_CA_PATH)).toString();
+// const sslCa = fs.readFileSync(path.resolve(__dirname, '..', process.env.DB_SSL_CA_PATH)).toString();
+const sslCa = process.env.CA_CERT;
 
 module.exports = {
   development: {

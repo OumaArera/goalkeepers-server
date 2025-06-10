@@ -4,9 +4,10 @@ const path = require('path');
 require('dotenv').config();
 
 // Load SSL CA Certificate
-const sslCa = fs.readFileSync(
-  path.resolve(__dirname, '..', process.env.DB_SSL_CA_PATH)
-).toString();
+// const sslCa = fs.readFileSync(
+//   path.resolve(__dirname, '..', process.env.DB_SSL_CA_PATH)
+// ).toString();
+const sslCa = process.env.CA_CERT;
 
 // Configure Sequelize with SSL and env credentials
 const sequelize = new Sequelize(
