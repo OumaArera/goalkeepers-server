@@ -1,30 +1,41 @@
+// services/TokenService.js
 const crypto = require('crypto');
 const { Token } = require('../models');
 require('dotenv').config();
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
-const IV_LENGTH = Number(process.env.IV_LENGTH);
+const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); 
+const IV_LENGTH = parseInt(process.env.IV_LENGTH); 
 
 const TokenService = {
   encrypt(token) {
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
-    let encrypted = cipher.update(token, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return iv.toString('hex') + ':' + encrypted;
+    const cipher = crypto.createCipheriv('aes-256-gcm', ENCRYPTION_KEY, iv);
+    
+    const encrypted = Buffer.concat([cipher.update(token, 'utf8'), cipher.final()]);
+    const authTag = cipher.getAuthTag();
+
+    // Concatenate IV, authTag, and ciphertext for transport
+    const payload = Buffer.concat([iv, authTag, encrypted]).toString('base64');
+    return payload;
   },
 
-  decrypt(encryptedToken) {
-    const [ivHex, encrypted] = encryptedToken.split(':');
-    const iv = Buffer.from(ivHex, 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+  decrypt(payload) {
+    const data = Buffer.from(payload, 'base64');
+    const iv = data.subarray(0, IV_LENGTH);
+    const authTag = data.subarray(IV_LENGTH, IV_LENGTH + 16); 
+    const encrypted = data.subarray(IV_LENGTH + 16);
+
+    const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
+    decipher.setAuthTag(authTag);
+
+    let decrypted = decipher.update(encrypted);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString('utf8');
   },
 
-  async saveToken(userId=null, customerId=null, token, expiresAt) {
-    const newToken = await Token.create({ userId, customerId,  token, expiresAt });
+
+  async saveToken(userId = null, customerId = null, token, expiresAt) {
+    const newToken = await Token.create({ userId, customerId, token, expiresAt });
     return newToken;
   },
 
