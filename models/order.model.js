@@ -18,16 +18,10 @@ const Order = sequelize.define('Order', {
     onDelete: 'CASCADE',
     field: 'customer_id',
   },
-  itemId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'items',
-      key: 'id',
-    },
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    field: 'item_id',
+  itemsPurchased: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    field: 'items_purchased',
   },
   orderNumber: {
     type: DataTypes.STRING,

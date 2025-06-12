@@ -10,78 +10,56 @@ const OrderNumberGenerator = require('../utils/orderNumber');
 class OrderController {
   
   static async createOrder(req, res) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const transaction = await sequelize.transaction(); 
+
+    try {
+
+      // Generate order number
+      const orderNumber = await OrderNumberGenerator.generateOrderNumber();
+
+      const customerId = req.user.customerId;
+      if (!customerId) return res.status(400).json({message: "Customer must be logged in"});
+
+      // Create order
+      const newOrderData = {
+        ...req.body,
+        orderNumber,
+        customerId
+      };
+      const order = await Order.create(newOrderData, { transaction });
+
+      // Commit transaction
+      await transaction.commit();
+
+      return res.status(201).json({
+        message: 'Order created successfully',
+        data: order
+      });
+    } catch (error) {
+      // Rollback on error
+      await transaction.rollback();
+      console.error('Create Order Error:', error);
+
+      if (error.name === 'SequelizeValidationError') {
+        return res.status(400).json({
+          message: 'Validation error',
+          errors: error.errors.map(e => ({ field: e.path, message: e.message }))
+        });
+      }
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({
+          message: 'Order number already exists',
+          field: 'orderNumber'
+        });
+      }
+      return res.status(500).json({ message: 'Server error', error });
+    }
   }
-
-  const transaction = await sequelize.transaction(); 
-
-  try {
-    const { itemId, quantity } = req.body;
-    if (!itemId || !quantity) {
-      return res.status(400).json({ message: 'itemId and quantity are required' });
-    }
-
-    // Fetch the item
-    const item = await Item.findByPk(itemId, { transaction });
-    if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
-    }
-
-    // Check quantity
-    if (item.quantity < quantity) {
-      return res.status(400).json({
-        message: 'Insufficient item quantity',
-        availableQuantity: item.quantity
-      });
-    }
-
-    // Reduce item quantity
-    // item.quantity -= quantity;
-    // await item.save({ transaction });
-
-    // Generate order number
-    const orderNumber = await OrderNumberGenerator.generateOrderNumber();
-
-    const customerId = req.user.customerId;
-    if (!customerId) return res.status(400).json({message: "Customer must be logged in"});
-
-    // Create order
-    const newOrderData = {
-      ...req.body,
-      orderNumber,
-      customerId
-    };
-    const order = await Order.create(newOrderData, { transaction });
-
-    // Commit transaction
-    await transaction.commit();
-
-    return res.status(201).json({
-      message: 'Order created successfully',
-      data: order
-    });
-  } catch (error) {
-    // Rollback on error
-    await transaction.rollback();
-    console.error('Create Order Error:', error);
-
-    if (error.name === 'SequelizeValidationError') {
-      return res.status(400).json({
-        message: 'Validation error',
-        errors: error.errors.map(e => ({ field: e.path, message: e.message }))
-      });
-    }
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(409).json({
-        message: 'Order number already exists',
-        field: 'orderNumber'
-      });
-    }
-    return res.status(500).json({ message: 'Server error', error });
-  }
-}
 
   static async getOrderById(req, res) {
     const errors = validationResult(req);
@@ -163,30 +141,6 @@ class OrderController {
       // If status is being updated to 'delivered', set deliveredAt timestamp
       if (updateData.status === 'delivered' && !updateData.deliveredAt) {
       updateData.deliveredAt = new Date();
-      }
-
-      // Handle quantity changes
-      if (updateData.quantity !== undefined) {
-        const item = await Item.findByPk(existingOrder.itemId, { transaction });
-        if (!item) {
-          await transaction.rollback();
-          return res.status(404).json({ message: 'Item not found' });
-        }
-
-        const previousQuantity = existingOrder.quantity;
-        const newQuantity = updateData.quantity;
-
-        if (newQuantity > previousQuantity) {
-          const additionalNeeded = newQuantity - previousQuantity;
-          if (item.quantity < additionalNeeded) {
-          await transaction.rollback();
-          return res.status(400).json({
-            message: 'Insufficient item quantity to increase order',
-            availableQuantity: item.quantity
-          });
-          }
-
-        } 
       }
 
       // Update order

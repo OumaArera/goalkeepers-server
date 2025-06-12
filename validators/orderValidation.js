@@ -5,11 +5,14 @@ class OrderValidation {
   static validationRules() {
     return [
 
-      body('itemId')
+      body('itemsPurchased')
         .notEmpty()
-        .withMessage('Item ID is required')
-        .isUUID()
-        .withMessage('Item ID must be a valid UUID'),
+        .custom((value) => {
+          if (value && typeof value !== 'object') {
+            throw new Error('Items Purchased must be a valid JSON object');
+          }
+          return true;
+        }),
       
       body('status')
         .optional()
@@ -131,10 +134,6 @@ class OrderValidation {
         .isUUID()
         .withMessage('Customer ID must be a valid UUID'),
 
-      query('itemId')
-        .optional()
-        .isUUID()
-        .withMessage('Item ID must be a valid UUID'),
       
       query('orderNumber')
         .optional()
@@ -291,6 +290,14 @@ class OrderValidation {
         .custom((value) => {
           if (value !== undefined && parseFloat(value) < 0) {
             throw new Error('Grand total must be a positive number');
+          }
+          return true;
+        }),
+      body('itemsPurchased')
+        .optional()
+        .custom((value) => {
+          if (value && typeof value !== 'object') {
+            throw new Error('Items Purchased must be a valid JSON object');
           }
           return true;
         }),

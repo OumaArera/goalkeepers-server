@@ -9,10 +9,6 @@ class OrderFilters {
       filters.customerId = queryParams.customerId;
     }
 
-    if (queryParams.itemId) {
-      filters.itemId = queryParams.itemId;
-    }
-
     // Order number filter (partial match)
     if (queryParams.orderNumber) {
       filters.orderNumber = { [Op.iLike]: `%${queryParams.orderNumber}%` };

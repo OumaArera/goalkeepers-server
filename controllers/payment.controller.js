@@ -93,31 +93,6 @@ class PaymentController {
             statusMessage: pollResult.message
           }, { transaction: finalTransaction });
 
-          // Update order status
-          const orderToUpdate = await Order.findByPk(orderId, { transaction: finalTransaction });
-          if (orderToUpdate) {
-            await orderToUpdate.update({ status: 'confirmed' }, { transaction: finalTransaction });
-
-            // Update item quantity
-            const item = await Item.findOne({
-              where: { id: orderToUpdate.itemId },
-              transaction: finalTransaction
-            });
-
-            if (item) {
-              const newQuantity = item.quantity - orderToUpdate.quantity;
-              if (newQuantity < 0) {
-                await finalTransaction.rollback();
-                return res.status(400).json({ 
-                  message: 'Payment completed but item stock is insufficient.',
-                  data: keysToCamel(updatedPayment.toJSON())
-                });
-              }
-
-              await item.update({ quantity: newQuantity }, { transaction: finalTransaction });
-            }
-          }
-
           await finalTransaction.commit();
 
           return res.status(201).json({
