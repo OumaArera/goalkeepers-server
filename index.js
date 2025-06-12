@@ -9,6 +9,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const allowedOrigins = [
+  "http://localhost:5173/",
+  "https://goalkeeper-umber.vercel.app/",
   process.env.CORS_ORIGIN_1,
   process.env.CORS_ORIGIN_2,
   process.env.CORS_ORIGIN_3,
