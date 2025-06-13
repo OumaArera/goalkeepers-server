@@ -34,7 +34,7 @@ class PaymentController {
         orderId,
         amount,
         phoneNumber,
-        reference,
+        reference: order.orderNumber,
         paymentStatus: 'pending'
       };
 
