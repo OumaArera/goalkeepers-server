@@ -115,36 +115,48 @@ class OrderController {
   static async updateOrder(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
 
     const { id } = req.params;
-    const updateData = { ...req.body };
+    const { itemsPurchased, ...otherUpdates } = req.body;
 
-    // Fields that should not be manually updated
-    delete updateData.id;
-    delete updateData.orderNumber;
-    delete updateData.customerId;
-    delete updateData.createdAt;
-    delete updateData.updatedAt;
-
+    // Start transaction
     const transaction = await sequelize.transaction();
-
     try {
-      // Fetch the current order
       const existingOrder = await Order.findByPk(id, { transaction });
+
       if (!existingOrder) {
-      await transaction.rollback();
-      return res.status(404).json({ message: 'Order not found' });
+        await transaction.rollback();
+        return res.status(404).json({ message: 'Order not found' });
       }
 
-      // If status is being updated to 'delivered', set deliveredAt timestamp
-      if (updateData.status === 'delivered' && !updateData.deliveredAt) {
-      updateData.deliveredAt = new Date();
+      // Merge or mutate itemsPurchased
+      if (itemsPurchased) {
+        const currentItems = existingOrder.itemsPurchased;
+
+        let updatedItems;
+
+        if (!Array.isArray(currentItems)) {
+          // Replace with new items if current is not an array
+          updatedItems = itemsPurchased;
+        } else {
+          // Append new items to the existing array
+          updatedItems = [...currentItems, ...itemsPurchased];
+        }
+
+        otherUpdates.itemsPurchased = updatedItems;
       }
 
-      // Update order
-      const [updated] = await Order.update(updateData, { where: { id }, transaction });
+      if (otherUpdates.status === 'delivered' && !otherUpdates.deliveredAt) {
+        otherUpdates.deliveredAt = new Date();
+      }
+
+      const [updated] = await Order.update(otherUpdates, {
+        where: { id },
+        transaction,
+      });
+
       if (!updated) {
         await transaction.rollback();
         return res.status(404).json({ message: 'Order not updated' });
@@ -156,18 +168,11 @@ class OrderController {
       const camelCaseOrder = keysToCamel(updatedOrder.toJSON());
       return res.status(200).json({
         message: 'Order updated successfully',
-        data: camelCaseOrder
+        data: camelCaseOrder,
       });
-
     } catch (error) {
       await transaction.rollback();
       console.error('Update Order Error:', error);
-      if (error.name === 'SequelizeValidationError') {
-        return res.status(400).json({
-          message: 'Validation error',
-          errors: error.errors.map(e => ({ field: e.path, message: e.message }))
-        });
-      }
       return res.status(500).json({ message: 'Server error', error });
     }
   }

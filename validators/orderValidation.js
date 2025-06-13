@@ -5,14 +5,19 @@ class OrderValidation {
   static validationRules() {
     return [
 
-      body('itemsPurchased')
-        .notEmpty()
-        .custom((value) => {
-          if (value && typeof value !== 'object') {
-            throw new Error('Items Purchased must be a valid JSON object');
-          }
-          return true;
-        }),
+        body('itemsPurchased')
+          .notEmpty()
+          .custom((value) => {
+            if (!Array.isArray(value)) {
+            throw new Error('Items Purchased must be an array of objects');
+            }
+            for (const item of value) {
+            if (typeof item !== 'object' || Array.isArray(item) || item === null) {
+              throw new Error('Each item in Items Purchased must be a valid object');
+            }
+            }
+            return true;
+          }),
       
       body('status')
         .optional()
@@ -294,14 +299,19 @@ class OrderValidation {
           return true;
         }),
       body('itemsPurchased')
-        .optional()
-        .custom((value) => {
-          if (value && typeof value !== 'object') {
-            throw new Error('Items Purchased must be a valid JSON object');
+      .optional()
+      .custom((value) => {
+        if (!Array.isArray(value)) {
+          throw new Error('Items Purchased must be an array of objects');
+        }
+        for (const item of value) {
+          if (typeof item !== 'object' || Array.isArray(item) || item === null) {
+            throw new Error('Each item in Items Purchased must be a valid object');
           }
-          return true;
-        }),
-      
+        }
+        return true;
+      }),
+
       body('paymentMethod')
         .optional()
         .isIn(['Mpesa', 'Debit/Credit Card', 'PayPal', 'Airtel Money', 'T-Cash'])
