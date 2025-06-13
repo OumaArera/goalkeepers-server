@@ -34,7 +34,7 @@ class PaymentController {
         orderId,
         amount,
         phoneNumber,
-        reference: order.orderNumber,
+        reference,
         paymentStatus: 'pending'
       };
 
@@ -44,7 +44,7 @@ class PaymentController {
       const mpesaResponse = await MpesaPayment.initiateSTKPush({
         phoneNumber,
         amount,
-        accountReference: reference
+        accountReference: order.orderNumber
       });
 
       if (!mpesaResponse.success) {
