@@ -15,13 +15,17 @@ class CartFilters {
     }
 
     // Status filter
-    if (queryParams.status) {
+    if ('status' in queryParams) {
       if (Array.isArray(queryParams.status)) {
         filters.status = { [Op.in]: queryParams.status };
       } else {
         filters.status = queryParams.status;
       }
+    } else {
+      // Exclude "removed" by default if no status filter is specified
+      filters.status = { [Op.ne]: 'removed' };
     }
+
 
     // Date range filters for creation date
     if (queryParams.fromDate) {
