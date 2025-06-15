@@ -93,6 +93,11 @@ class PaymentController {
             statusMessage: pollResult.message
           }, { transaction: finalTransaction });
 
+          await order.update({
+            status: "confirmed",
+            paymentStatus: "paid",
+          }, { transaction: finalTransaction })
+
           await finalTransaction.commit();
 
           return res.status(201).json({

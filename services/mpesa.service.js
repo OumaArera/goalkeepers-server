@@ -29,7 +29,7 @@ class MpesaPayment {
           },
         }
       );
-      console.log("Access Token: ", response.data.access_token)
+      // console.log("Access Token: ", response.data.access_token)
       return response.data.access_token;
     } catch (err) {
       console.error('Access token error:', err.response?.data || err.message);
@@ -88,7 +88,7 @@ class MpesaPayment {
         AccountReference: accountReference,
         TransactionDesc: transactionDesc,
       };
-      console.log("Payload: ", payload);
+      // console.log("Payload: ", payload);
       const response = await axios.post(
         `${this.baseUrl}/mpesa/stkpush/v1/processrequest`,
         payload,
@@ -141,7 +141,7 @@ class MpesaPayment {
         }
       );
 
-      console.log("Query Response: ", response.data);
+      // console.log("Query Response: ", response.data);
       return { success: true, data: response.data };
     } catch (error) {
       console.error('STK Push query error:', error.response?.data || error.message);
