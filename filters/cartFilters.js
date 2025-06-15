@@ -22,8 +22,8 @@ class CartFilters {
         filters.status = queryParams.status;
       }
     } else {
-      // Exclude "removed" by default if no status filter is specified
-      filters.status = { [Op.ne]: 'removed' };
+      // Exclude "removed" or "bought" by default if no status filter is specified
+      filters.status = { [Op.notIn]: ['removed', 'bought'] };
     }
 
 
