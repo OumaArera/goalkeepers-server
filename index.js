@@ -66,6 +66,9 @@ app.use('/v1/api/partners', require('./routes/partner.routes'));
 app.use('/v1/api/orders', require('./routes/order.routes'));
 app.use('/v1/api/payments', require('./routes/payment.routes'));
 app.use('/v1/api/carts/customer', require('./routes/cart.routes'));
+app.use('/v1/api/ticket-repos', require('./routes/ticketRepo.routes'));
+app.use('/v1/api/ticket-categories', require('./routes/ticketCategory.routes'));
+app.use('/v1/api/match-tickets', require('./routes/ticket.routes'));
 
 // Catch-all route for non-existent endpoints
 app.use((req, res, next) => {

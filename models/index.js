@@ -19,6 +19,9 @@ const Order = require('./order.model');
 const Payment = require('./payment.model');
 const Token = require('./token.model');
 const Cart = require('./cart.model');
+const TicketRepo = require("./ticketRepo.model");
+const TicketCategory = require('./ticketCategory.model');
+const Ticket = require('./ticket.model');
 
 Item.belongsTo(User, { foreignKey: 'promoterId', as: 'promoter_' });
 User.hasMany(Item, { foreignKey: 'promoterId', as: 'promotedItems_' });
@@ -73,6 +76,12 @@ Cart.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 Item.hasMany(Cart, { foreignKey: 'itemId', as: 'carts' });
 Cart.belongsTo(Item, { foreignKey: 'itemId', as: 'item' });
 
+TicketRepo.hasMany(TicketCategory, { foreignKey: 'ticketRepoId', as: 'categories' });
+TicketCategory.belongsTo(TicketRepo, { foreignKey: 'ticketRepoId', as: 'event' });
+
+Ticket.belongsTo(TicketRepo, { foreignKey: 'eventId', as: 'event' });
+TicketRepo.hasMany(Ticket, { foreignKey: 'eventId', as: 'tickets' });
+
 
 module.exports = {
   sequelize,
@@ -95,5 +104,8 @@ module.exports = {
   Order,
   Payment,
   Token,
-  Cart
+  Cart,
+  TicketRepo,
+  TicketCategory,
+  Ticket
 };
