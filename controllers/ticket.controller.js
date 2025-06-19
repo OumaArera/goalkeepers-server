@@ -361,7 +361,14 @@ class TicketController {
     try {
       const { ticketNumber, securityHash } = req.body;
       
-      const ticket = await Ticket.findOne({ where: { ticketNumber } });
+      const ticket = await Ticket.findOne({
+        where: { ticketNumber },
+        include: [{
+          model: TicketRepo,
+          as: 'event',
+          attributes: { exclude: ['createdAt', 'updatedAt'] },
+        }],
+      });
 
       if (!ticket) {
         return res.status(404).json({ 
