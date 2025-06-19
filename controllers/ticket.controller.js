@@ -370,13 +370,14 @@ class TicketController {
         });
       }
 
-      const isValid = TicketNumberGenerator.verifyTicketHash(ticket.toJSON(), securityHash);
-
-      if (!isValid) {
-        return res.status(400).json({ 
-          message: 'Invalid ticket hash',
-          valid: false 
-        });
+      if (securityHash){
+        const isValid = TicketNumberGenerator.verifyTicketHash(ticket.toJSON(), securityHash);
+        if (!isValid) {
+          return res.status(400).json({ 
+            message: 'Invalid ticket hash',
+            valid: false 
+          });
+        }
       }
 
       const camelCaseTicket = keysToCamel(ticket.toJSON());
