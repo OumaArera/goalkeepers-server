@@ -225,7 +225,6 @@ class TicketValidation {
       
       body('securityHash')
         .optional()
-        .withMessage('Security hash is required')
         .isLength({ min: 64, max: 64 })
         .withMessage('Security hash must be exactly 64 characters'),
     ];
